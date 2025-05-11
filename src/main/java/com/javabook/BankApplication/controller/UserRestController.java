@@ -29,9 +29,7 @@ public class UserRestController {
   public ResponseEntity<BankResponse> createAccount(@RequestBody UserRequest userRequest) {
 
     // Call the createAccount method from the UserService
-    BankResponse bankResponse = userService.createAccount(userRequest);
-
-    return ResponseEntity.status(HttpStatus.CREATED).body(bankResponse);
+    return new ResponseEntity<>(userService.createAccount(userRequest), HttpStatus.CREATED);
   }
 
   /**
@@ -44,12 +42,7 @@ public class UserRestController {
   public ResponseEntity<?> balanceEnquiry(@RequestBody BalanceEnquiry balanceEnquiry) {
 
     // Call the balanceEnquiry method from the UserService
-    BankResponse bankResponse = userService.balanceEnquiry(balanceEnquiry);
-    if (bankResponse.getResponseCode().equals("200")) {
-      return ResponseEntity.ok(bankResponse);
-    } else {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(bankResponse);
-    }
+    return new ResponseEntity<>(userService.balanceEnquiry(balanceEnquiry), HttpStatus.OK);
   }
 
   /**
@@ -62,12 +55,7 @@ public class UserRestController {
   public ResponseEntity<?> creditAmount(@RequestBody CreditDebitRequest creditDebitRequest) {
 
     // Call the creditAmount method from the UserService
-    BankResponse bankResponse = userService.creditAmount(creditDebitRequest);
-    if (bankResponse.getResponseCode().equals("200")) {
-      return ResponseEntity.ok(bankResponse);
-    } else {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(bankResponse);
-    }
+    return new ResponseEntity<>(userService.creditAmount(creditDebitRequest), HttpStatus.OK);
   }
 
   /**
@@ -77,14 +65,10 @@ public class UserRestController {
    * @return ResponseEntity containing the BankResponse object
    */
   @PostMapping("/debitAmount")
-  public ResponseEntity<?> debitAmount(@RequestBody CreditDebitRequest creditDebitRequest) {
+  public ResponseEntity<BankResponse> debitAmount(
+      @RequestBody CreditDebitRequest creditDebitRequest) {
 
     // Call the debitAmount method from the UserService
-    BankResponse bankResponse = userService.debitAmount(creditDebitRequest);
-    if (bankResponse.getResponseCode().equals("200")) {
-      return ResponseEntity.ok(bankResponse);
-    } else {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(bankResponse);
-    }
+    return new ResponseEntity<>(userService.debitAmount(creditDebitRequest), HttpStatus.OK);
   }
 }
