@@ -1,5 +1,6 @@
 package com.javabook.BankApplication.controller;
 
+import com.javabook.BankApplication.dto.BalanceEnquiry;
 import com.javabook.BankApplication.dto.BankResponse;
 import com.javabook.BankApplication.dto.UserRequest;
 import com.javabook.BankApplication.service.UserService;
@@ -30,5 +31,23 @@ public class UserRestController {
     BankResponse bankResponse = userService.createAccount(userRequest);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(bankResponse);
+  }
+
+  /**
+   * This method is used to check the balance of a user account.
+   *
+   * @param balanceEnquiry the balance enquiry object containing user details
+   * @return ResponseEntity containing the BankResponse object
+   */
+  @PostMapping("/balanceEnquiry")
+  public ResponseEntity<?> balanceEnquiry(@RequestBody BalanceEnquiry balanceEnquiry) {
+
+    // Call the balanceEnquiry method from the UserService
+    BankResponse bankResponse = userService.balanceEnquiry(balanceEnquiry);
+    if (bankResponse.getResponseCode().equals("200")) {
+      return ResponseEntity.ok(bankResponse);
+    } else {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(bankResponse);
+    }
   }
 }

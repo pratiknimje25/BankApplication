@@ -1,21 +1,17 @@
 package com.javabook.BankApplication.dto;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Data
+@AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@AllArgsConstructor
-@Data
-public class AccountInfo {
+public class CreditDebitRequest {
 
-  private String accountHolderName;
   private String accountNumber;
-  private String accountType;
-  private String accountStatus;
-  private BigDecimal accountBalance;
+  private BigDecimal amount;
 }

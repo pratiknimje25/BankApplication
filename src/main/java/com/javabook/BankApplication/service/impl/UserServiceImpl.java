@@ -1,9 +1,6 @@
 package com.javabook.BankApplication.service.impl;
 
-import com.javabook.BankApplication.dto.AccountInfo;
-import com.javabook.BankApplication.dto.BankResponse;
-import com.javabook.BankApplication.dto.EmailDetails;
-import com.javabook.BankApplication.dto.UserRequest;
+import com.javabook.BankApplication.dto.*;
 import com.javabook.BankApplication.entity.User;
 import com.javabook.BankApplication.repository.UserRepository;
 import com.javabook.BankApplication.service.UserService;
@@ -31,7 +28,6 @@ public class UserServiceImpl implements UserService {
           .responseMessage("Email " + userRequest.getEmail() + " already exists.")
           .build();
     }
-
     // create a new user using the builder pattern
     User newUser =
         User.builder()
@@ -63,9 +59,40 @@ public class UserServiceImpl implements UserService {
                 .accountNumber(saveUser.getAccountNumber())
                 .accountType(saveUser.getAccountType())
                 .accountStatus(saveUser.getAccountStatus())
-                .accountBalance(String.valueOf(saveUser.getAccountBalance()))
+                .accountBalance(saveUser.getAccountBalance())
                 .build())
         .build();
+  }
+
+  @Override
+  public BankResponse balanceEnquiry(BalanceEnquiry balanceEnquiry) {
+    // Check if the account number exists
+    if (!userRepository.existsByAccountNumber(balanceEnquiry.getAccountNumber())) {
+      return BankResponse.builder()
+          .responseCode(HttpStatus.NOT_FOUND.getReasonPhrase())
+          .responseMessage("Account number " + balanceEnquiry.getAccountNumber() + " not found.")
+          .build();
+    }
+    // Fetch the user by account number
+    User userDetails = userRepository.findByAccountNumber(balanceEnquiry.getAccountNumber());
+
+    return BankResponse.builder()
+        .responseCode(HttpStatus.OK.getReasonPhrase())
+        .responseMessage("Account details retrieved successfully.")
+        .accountInfo(
+            AccountInfo.builder()
+                .accountHolderName(userDetails.getFirstName() + " " + userDetails.getLastName())
+                .accountNumber(userDetails.getAccountNumber())
+                .accountType(userDetails.getAccountType())
+                .accountStatus(userDetails.getAccountStatus())
+                .accountBalance(userDetails.getAccountBalance())
+                .build())
+        .build();
+  }
+
+  @Override
+  public BankResponse creditAmount(CreditDebitRequest request) {
+    return null;
   }
 
   private void sendNotificationEmail(User saveUser) {
