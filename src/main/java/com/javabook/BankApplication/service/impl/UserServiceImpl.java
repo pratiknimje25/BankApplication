@@ -1,8 +1,10 @@
 package com.javabook.BankApplication.service.impl;
 
 import com.javabook.BankApplication.dto.*;
+import com.javabook.BankApplication.entity.Transaction;
 import com.javabook.BankApplication.entity.User;
 import com.javabook.BankApplication.repository.UserRepository;
+import com.javabook.BankApplication.service.TransactionService;
 import com.javabook.BankApplication.service.UserService;
 import com.javabook.BankApplication.utils.AccountNumberGenerator;
 import java.math.BigDecimal;
@@ -17,6 +19,8 @@ public class UserServiceImpl implements UserService {
   @Autowired private UserRepository userRepository;
 
   @Autowired private EmailService emailService;
+
+  @Autowired private TransactionService transactionService;
 
   @Override
   public BankResponse createAccount(UserRequest userRequest) {
@@ -113,6 +117,30 @@ public class UserServiceImpl implements UserService {
     userDetails.setAccountBalance(userDetails.getAccountBalance().add(request.getAmount()));
     // Save the updated user
     User updatedUser = userRepository.save(userDetails);
+
+    // send email notification to the user
+    EmailDetails amountCreditNotification =
+        EmailDetails.builder()
+            .recipient(updatedUser.getEmail())
+            .msgBody(
+                "Dear "
+                    + updatedUser.getFirstName()
+                    + ",\n\n"
+                    + "your account has been created "
+                    + request.getAmount()
+                    + " amount.")
+            .subject("Amount Credit Notification")
+            .build();
+    emailService.sendEmailNotification(amountCreditNotification);
+
+    // Save the transaction details
+    transactionService.createTransaction(
+        Transaction.builder()
+            .accountNumber(request.getAccountNumber())
+            .transactionType("CREDIT")
+            .amount(request.getAmount())
+            .build());
+
     // Create the response
     return BankResponse.builder()
         .responseCode(HttpStatus.OK.getReasonPhrase())
@@ -179,6 +207,30 @@ public class UserServiceImpl implements UserService {
     userDetails.setAccountBalance(userDetails.getAccountBalance().subtract(request.getAmount()));
     // Save the updated user
     User updatedUser = userRepository.save(userDetails);
+
+    // send email notification to the user
+    EmailDetails amountDebitNotification =
+        EmailDetails.builder()
+            .recipient(updatedUser.getEmail())
+            .msgBody(
+                "Dear "
+                    + updatedUser.getFirstName()
+                    + ",\n\n"
+                    + "your account has been debited "
+                    + request.getAmount()
+                    + " amount.")
+            .subject("Amount Debited Notification")
+            .build();
+    emailService.sendEmailNotification(amountDebitNotification);
+
+    // Save the debit transaction details
+    transactionService.createTransaction(
+        Transaction.builder()
+            .accountNumber(request.getAccountNumber())
+            .transactionType("DEBIT")
+            .amount(request.getAmount())
+            .build());
+
     // Create the response
     return BankResponse.builder()
         .responseCode(HttpStatus.OK.getReasonPhrase())
