@@ -92,7 +92,40 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public BankResponse creditAmount(CreditDebitRequest request) {
-    return null;
+    // Check if the account number exists
+
+    if (!userRepository.existsByAccountNumber(request.getAccountNumber())) {
+      return BankResponse.builder()
+          .responseCode(HttpStatus.NOT_FOUND.getReasonPhrase())
+          .responseMessage("Account number " + request.getAccountNumber() + " not found.")
+          .build();
+    }
+    // Fetch the user by account number
+    User userDetails = userRepository.findByAccountNumber(request.getAccountNumber());
+    // Check if the amount is valid
+    if (request.getAmount().intValue() <= 0) {
+      return BankResponse.builder()
+          .responseCode(HttpStatus.BAD_REQUEST.getReasonPhrase())
+          .responseMessage("Invalid amount. Amount should be greater than zero.")
+          .build();
+    }
+    // Update the account balance
+    userDetails.setAccountBalance(userDetails.getAccountBalance().add(request.getAmount()));
+    // Save the updated user
+    User updatedUser = userRepository.save(userDetails);
+    // Create the response
+    return BankResponse.builder()
+        .responseCode(HttpStatus.OK.getReasonPhrase())
+        .responseMessage("Amount credited successfully.")
+        .accountInfo(
+            AccountInfo.builder()
+                .accountHolderName(updatedUser.getFirstName() + " " + updatedUser.getLastName())
+                .accountNumber(updatedUser.getAccountNumber())
+                .accountType(updatedUser.getAccountType())
+                .accountStatus(updatedUser.getAccountStatus())
+                .accountBalance(updatedUser.getAccountBalance())
+                .build())
+        .build();
   }
 
   private void sendNotificationEmail(User saveUser) {

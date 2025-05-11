@@ -2,6 +2,7 @@ package com.javabook.BankApplication.controller;
 
 import com.javabook.BankApplication.dto.BalanceEnquiry;
 import com.javabook.BankApplication.dto.BankResponse;
+import com.javabook.BankApplication.dto.CreditDebitRequest;
 import com.javabook.BankApplication.dto.UserRequest;
 import com.javabook.BankApplication.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +49,24 @@ public class UserRestController {
       return ResponseEntity.ok(bankResponse);
     } else {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(bankResponse);
+    }
+  }
+
+  /**
+   * This method is used to credit an amount to a user account.
+   *
+   * @param creditDebitRequest the credit/debit request object containing user details
+   * @return ResponseEntity containing the BankResponse object
+   */
+  @PostMapping("/creditAmount")
+  public ResponseEntity<?> creditAmount(@RequestBody CreditDebitRequest creditDebitRequest) {
+
+    // Call the creditAmount method from the UserService
+    BankResponse bankResponse = userService.creditAmount(creditDebitRequest);
+    if (bankResponse.getResponseCode().equals("200")) {
+      return ResponseEntity.ok(bankResponse);
+    } else {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(bankResponse);
     }
   }
 }
