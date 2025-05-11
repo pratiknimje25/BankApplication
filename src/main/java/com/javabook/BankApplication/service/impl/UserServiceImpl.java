@@ -193,4 +193,67 @@ public class UserServiceImpl implements UserService {
                 .build())
         .build();
   }
+
+  @Override
+  public BankResponse transferAmount(TransferRequest transferRequest) {
+    // Check if the sender account number exists
+    if (!userRepository.existsByAccountNumber(transferRequest.getSourceAccountNumber())) {
+      return BankResponse.builder()
+          .responseCode(HttpStatus.NOT_FOUND.getReasonPhrase())
+          .responseMessage(
+              "Source account number " + transferRequest.getSourceAccountNumber() + " not found.")
+          .build();
+    }
+    // Check if the receiver account number exists
+    if (!userRepository.existsByAccountNumber(transferRequest.getDestinationAccountNumber())) {
+      return BankResponse.builder()
+          .responseCode(HttpStatus.NOT_FOUND.getReasonPhrase())
+          .responseMessage(
+              "Destination account number "
+                  + transferRequest.getDestinationAccountNumber()
+                  + " not found.")
+          .build();
+    }
+    // Fetch the sender and receiver by account number
+    User sourceAccount =
+        userRepository.findByAccountNumber(transferRequest.getSourceAccountNumber());
+    User destinationAccount =
+        userRepository.findByAccountNumber(transferRequest.getDestinationAccountNumber());
+    // Check if the amount is valid
+    if (transferRequest.getAmount().intValue() <= 0) {
+      return BankResponse.builder()
+          .responseCode(HttpStatus.BAD_REQUEST.getReasonPhrase())
+          .responseMessage("Invalid amount. Amount should be greater than zero.")
+          .build();
+    }
+    // Check if the sender account has sufficient balance
+    if (sourceAccount.getAccountBalance().compareTo(transferRequest.getAmount()) < 0) {
+      return BankResponse.builder()
+          .responseCode(HttpStatus.BAD_REQUEST.getReasonPhrase())
+          .responseMessage("Insufficient balance in source account.")
+          .build();
+    }
+    // Update the sender account balance
+    sourceAccount.setAccountBalance(
+        sourceAccount.getAccountBalance().subtract(transferRequest.getAmount()));
+    // Update the receiver account balance
+    destinationAccount.setAccountBalance(
+        destinationAccount.getAccountBalance().add(transferRequest.getAmount()));
+    // Save the updated sender and receiver accounts
+    userRepository.save(sourceAccount);
+    userRepository.save(destinationAccount);
+    // Create the response
+    return BankResponse.builder()
+        .responseCode(HttpStatus.OK.getReasonPhrase())
+        .responseMessage("Amount transferred successfully.")
+        .accountInfo(
+            AccountInfo.builder()
+                .accountHolderName(sourceAccount.getFirstName() + " " + sourceAccount.getLastName())
+                .accountNumber(sourceAccount.getAccountNumber())
+                .accountType(sourceAccount.getAccountType())
+                .accountStatus(sourceAccount.getAccountStatus())
+                .accountBalance(sourceAccount.getAccountBalance())
+                .build())
+        .build();
+  }
 }

@@ -1,9 +1,6 @@
 package com.javabook.BankApplication.controller;
 
-import com.javabook.BankApplication.dto.BalanceEnquiry;
-import com.javabook.BankApplication.dto.BankResponse;
-import com.javabook.BankApplication.dto.CreditDebitRequest;
-import com.javabook.BankApplication.dto.UserRequest;
+import com.javabook.BankApplication.dto.*;
 import com.javabook.BankApplication.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -70,5 +67,18 @@ public class UserRestController {
 
     // Call the debitAmount method from the UserService
     return new ResponseEntity<>(userService.debitAmount(creditDebitRequest), HttpStatus.OK);
+  }
+
+  /**
+   * This method is used to transfer an amount from one user account to another.
+   *
+   * @param transferRequest the transfer request object containing user details
+   * @return ResponseEntity containing the BankResponse object
+   */
+  @PostMapping("/transferAmount")
+  public ResponseEntity<BankResponse> transferAmount(@RequestBody TransferRequest transferRequest) {
+
+    // Call the transferAmount method from the UserService
+    return new ResponseEntity<>(userService.transferAmount(transferRequest), HttpStatus.OK);
   }
 }
