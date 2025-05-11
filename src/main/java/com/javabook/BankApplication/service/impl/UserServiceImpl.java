@@ -149,4 +149,48 @@ public class UserServiceImpl implements UserService {
         EmailDetails.builder().recipient(recipient).msgBody(emailBody).subject(subject).build();
     emailService.sendEmailNotification(emailDetails);
   }
+
+  @Override
+  public BankResponse debitAmount(CreditDebitRequest request) {
+
+    if (!userRepository.existsByAccountNumber(request.getAccountNumber())) {
+      return BankResponse.builder()
+          .responseCode(HttpStatus.NOT_FOUND.getReasonPhrase())
+          .responseMessage("Account number " + request.getAccountNumber() + " not found.")
+          .build();
+    }
+    // Fetch the user by account number
+    User userDetails = userRepository.findByAccountNumber(request.getAccountNumber());
+    // Check if the amount is valid
+    if (request.getAmount().intValue() <= 0) {
+      return BankResponse.builder()
+          .responseCode(HttpStatus.BAD_REQUEST.getReasonPhrase())
+          .responseMessage("Invalid amount. Amount should be greater than zero.")
+          .build();
+    }
+    // Check if the account has sufficient balance
+    if (userDetails.getAccountBalance().compareTo(request.getAmount()) < 0) {
+      return BankResponse.builder()
+          .responseCode(HttpStatus.BAD_REQUEST.getReasonPhrase())
+          .responseMessage("Insufficient balance.")
+          .build();
+    }
+    // Update the account balance
+    userDetails.setAccountBalance(userDetails.getAccountBalance().subtract(request.getAmount()));
+    // Save the updated user
+    User updatedUser = userRepository.save(userDetails);
+    // Create the response
+    return BankResponse.builder()
+        .responseCode(HttpStatus.OK.getReasonPhrase())
+        .responseMessage("Amount debited successfully.")
+        .accountInfo(
+            AccountInfo.builder()
+                .accountHolderName(updatedUser.getFirstName() + " " + updatedUser.getLastName())
+                .accountNumber(updatedUser.getAccountNumber())
+                .accountType(updatedUser.getAccountType())
+                .accountStatus(updatedUser.getAccountStatus())
+                .accountBalance(updatedUser.getAccountBalance())
+                .build())
+        .build();
+  }
 }

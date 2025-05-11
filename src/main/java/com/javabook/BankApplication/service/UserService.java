@@ -13,4 +13,6 @@ public interface UserService {
   BankResponse balanceEnquiry(BalanceEnquiry balanceEnquiry);
 
   BankResponse creditAmount(CreditDebitRequest request);
+
+  BankResponse debitAmount(CreditDebitRequest request);
 }

@@ -69,4 +69,22 @@ public class UserRestController {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(bankResponse);
     }
   }
+
+  /**
+   * This method is used to debit an amount from a user account.
+   *
+   * @param creditDebitRequest the credit/debit request object containing user details
+   * @return ResponseEntity containing the BankResponse object
+   */
+  @PostMapping("/debitAmount")
+  public ResponseEntity<?> debitAmount(@RequestBody CreditDebitRequest creditDebitRequest) {
+
+    // Call the debitAmount method from the UserService
+    BankResponse bankResponse = userService.debitAmount(creditDebitRequest);
+    if (bankResponse.getResponseCode().equals("200")) {
+      return ResponseEntity.ok(bankResponse);
+    } else {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(bankResponse);
+    }
+  }
 }
